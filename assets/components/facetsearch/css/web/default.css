@@ -1,0 +1,61 @@
+.facetsearch-filter-outer{
+    max-height: 300px;
+    overflow: auto;
+}
+.facetsearch_sort .sort[data-dir="desc"] span::after {
+    content: "↓";
+}
+.facetsearch_sort .sort[data-dir="asc"] span::after {
+    content: "↑";
+}
+.facetsearch_sort a.active {
+    color: black;
+    text-decoration: none;
+    cursor: default;
+}
+.facetsearch-outer .hidden {
+    display: none;
+}
+.facetsearch-outer .disabled {
+    color: #aaa;
+}
+.facetsearch-results {
+    margin-bottom: 20px;
+}
+
+.facetsearch-outer .facetsearch_number_slider {
+    font-size: .7em;
+    margin-bottom: 10px;
+}
+
+.facetsearch-outer .facetsearch_number_inputs label {
+    display: inline-block;
+}
+
+.facetsearch_selected_wrapper {
+    min-height: 2em;
+    margin: 10px 0;
+}
+
+.facetsearch_selected {
+    display: none;
+    background: #f9f9f9;
+    padding: 5px 0 5px 5px;
+    border-radius: 3px;
+}
+
+.facetsearch_selected .facetsearch_selected_link em { color: #000; }
+
+.facetsearch-outer .btn_more {
+    width: 150px;
+    display: block;
+    margin: auto;
+}
+
+.facetsearch-outer .pagination {
+    margin: 0;
+    padding: 0;
+}
+
+.form-group .input-sm { width: 50%; display: inline-block; }
+

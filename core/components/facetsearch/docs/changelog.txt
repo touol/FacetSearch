@@ -1,0 +1,9 @@
+Changelog for FacetSearch.
+
+1.1.4-beta
+==============
+- 1 выпуск.
+
+1.0.0-beta
+==============
+- New build script.

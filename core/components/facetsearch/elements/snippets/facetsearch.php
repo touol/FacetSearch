@@ -1,0 +1,83 @@
+<?php
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+/** @var modX $modx */
+/** @var array $scriptProperties */
+/** @var FacetSearch $FacetSearch */
+if(empty($scriptProperties['parents'])) $scriptProperties['parents'] = $modx->resource->id;
+
+$FacetSearch = $modx->getService('FacetSearch', 'FacetSearch', MODX_CORE_PATH . 'components/facetsearch/model/', $scriptProperties);
+if (!$FacetSearch) {
+    return 'Could not load FacetSearch class!';
+}
+
+// Do your snippet code here. This demo grabs 5 items from our custom table.
+$tpl = $modx->getOption('tpl', $scriptProperties, 'Item');
+$sortby = $modx->getOption('sortby', $scriptProperties, 'name');
+$sortdir = $modx->getOption('sortbir', $scriptProperties, 'ASC');
+$limit = $modx->getOption('limit', $scriptProperties, 5);
+$outputSeparator = $modx->getOption('outputSeparator', $scriptProperties, "\n");
+$toPlaceholder = $modx->getOption('toPlaceholder', $scriptProperties, false);
+
+$hash = sha1(serialize($scriptProperties));
+$_SESSION['FacetSearch'][$hash] = $scriptProperties;
+
+if (!empty($_REQUEST[$scriptProperties['pageVarKey']])) {
+    $page = (int) $_REQUEST[$scriptProperties['pageVarKey']];
+}
+
+//sort
+$start_sort = implode(',', array_map('trim' , explode(',', $scriptProperties['sort'])));
+if (!empty($_REQUEST['sort'])) {$sort = $_REQUEST['sort'];}
+elseif (!empty($start_sort)) {$sort = $start_sort;}
+
+$config = [
+    'actionUrl' => $modx->getOption('assets_url'). 'components/facetsearch/action.php',
+    'cssUrl' => $modx->getOption('assets_url'). 'components/facetsearch/css/web/',
+    'jsUrl' => $modx->getOption('assets_url'). 'components/facetsearch/js/web/',
+    'mode' => in_array($scriptProperties['ajaxMode'], array('button', 'scroll')) ? $scriptProperties['ajaxMode'] : '',
+    'moreText' => 'Загрузить еще',//$modx->lexicon('mse2_more'),
+    'pageVar' => $scriptProperties['pageVarKey'],
+    'page' => $page,
+
+    'start_sort' => $start_sort,
+    'sort' => $sort == $start_sort ? '' : $sort,
+];
+if (!empty($scriptProperties['filterOptions'])) {
+	$filterOptions = $modx->fromJSON($scriptProperties['filterOptions']);
+	if (is_array($filterOptions)) {
+		$config['filterOptions'] = $filterOptions;
+	}
+}
+$config_js = preg_replace(array('/^\n/', '/\t{5}/'), '', '
+                            FacetSearch = {};
+                            FacetSearchConfig = ' . $modx->toJSON($config) . ';
+                    ');
+//$modx->regClientCSS('/assets/components/barcode/css/web/default.css');
+$path = $modx->getOption('assets_url').'components/facetsearch/';
+if($js) $modx->regClientStartupScript("<script type=\"text/javascript\">\n" . $config_js . "\n</script>", true);    
+if($js) $modx->regClientScript($path.$js);
+if($css) $modx->regClientCSS($path.$css);
+$FacetSearch->addTime('FacetSearch start');
+$response = $FacetSearch->handleRequest('filter',$_REQUEST);
+//$results = $response['data']['results'];
+$filters = implode("\r\n",$response['data']['filters']);
+$output = [
+    'hash'=>$hash,
+    'filters'=>$filters,
+    'results'=>$response['data']['results'],
+    'total'=>$response['data']['total'],
+    'pagination'=>$response['data']['pagination'],
+    'sort'=>$sort == $start_sort ? '' : $sort,
+    'log'=>$response['data']['log'],
+];
+// Output
+$output = $FacetSearch->pdo->getChunk($scriptProperties['tplOuter'], $output);
+// if (!empty($toPlaceholder)) {
+//     // If using a placeholder, output nothing and set output to specified placeholder
+//     $modx->setPlaceholder($toPlaceholder, $output);
+
+//     return '';
+// }
+// By default just return output
+return $output;

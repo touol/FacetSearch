@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="facetsearch" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" phpdoc-package="facetsearch"
+       version="1.1">
+    
+    <object class="fsOption" table="facetsearch_options" extends="xPDOSimpleObject">
+        <field key="class_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="true" default="0"/>
+        <field key="option_native_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="true" default="0"/>
+        <field key="key" dbtype="varchar" precision="255" phptype="string" null="false" default=""/>
+        <field key="alias" dbtype="varchar" precision="255" phptype="string" null="false" default=""/>
+        <field key="option_type_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="true" default="1"/>
+        <field key="label" dbtype="varchar" precision="255" phptype="string" null="false" default=""/>
+        <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0"/>
+
+        <index alias="class_id" name="class_id" primary="false" unique="false" type="BTREE">
+            <column key="class_id" length="" collation="A" null="false"/>
+        </index>
+        <index alias="option_native_id" name="option_native_id" primary="false" unique="false" type="BTREE">
+            <column key="option_native_id" length="" collation="A" null="false"/>
+        </index>
+        <index alias="key" name="key" primary="false" unique="false" type="BTREE">
+            <column key="key" length="" collation="A" null="false"/>
+        </index>
+        <index alias="active" name="active" primary="false" unique="false" type="BTREE">
+            <column key="active" length="" collation="A" null="false"/>
+        </index>
+    </object>
+
+</model>
