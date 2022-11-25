@@ -6,6 +6,10 @@ return [
         'description' => '',
         'events' => [
             'OnDocFormDelete' => [],
+            'OnResourceUndelete' => [],
+            'OnDocPublished' => [],
+            'OnDocUnPublished' => [],
+            'OnDocFormSave' => [],
         ],
     ],
 ];

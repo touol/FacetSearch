@@ -330,4 +330,32 @@ class FacetSearch
     public function error($message = "",$data = []){
         return array('success'=>0,'message'=>$message,'data'=>$data);
     }
+    public function unDeleteChildren($parent) {
+        $success = false;
+
+        $kids = $this->modx->getCollection('modResource',array(
+            'parent' => $parent,
+        ));
+
+        if(count($kids) > 0) {
+            /* the resource has children resources, we'll need to undelete those too */
+            /** @var modResource $kid */
+            foreach ($kids as $kid) {
+                if($kid->get('deleted') == 0){
+                    if(!$fsPubDelRes = $modx->getObject('fsPubDelRes',['resource_id'=>$kid->get('id')])){
+                        $fsPubDelRes = $modx->newObject('fsPubDelRes',['resource_id'=>$kid->get('id')]);
+                    }
+                    if($fsPubDelRes){
+                        $fsPubDelRes->status_id = 2;
+                        $fsPubDelRes->active = true;
+                        $success = $fsPubDelRes->save();
+                        if ($success) {
+                            $success = $this->unDeleteChildren($kid->get('id'));
+                        }
+                    }
+                }
+            }
+        }
+        return $success;
+    }
 }

@@ -189,13 +189,99 @@ class FacetSearchHandler
             $procent = round($i / $count, 2) * 100;
             $this->fs->setOption('facetsearch_build_index_status', $procent);
         }
+        
         if($success){
             $this->fs->setOption('facetsearch_last_upload', date('Y-m-d H:i:s'));
         }
+        
+        //fsPubDelRes
+        $success = $this->res_delete();
+        $success = $this->res_undelete($fsOptions0,$context);
+        
         $this->fs->lock('facetsearch_uploading', false);
         return $this->fs->success('123');
     }
-
+    public function res_delete(){
+        $this->pdo->setConfig([
+            'class'=>'fsPubDelRes',
+            'where'=>['active'=>1,'status_id'=>1],
+            'return'=>'data',
+            'limit'=>0,
+            ]);
+        $fsPubDelRess = $this->pdo->run();
+        if(is_array($fsPubDelRess) and count($fsPubDelRess) >0){
+            $ids = [];
+            foreach($fsPubDelRess as $fsPubDelRes){
+                if($fsPubDelRes0 = $this->modx->getObject('fsPubDelRes',$fsPubDelRes['id'])){
+                    $fsPubDelRes0->active = false;
+                    $fsPubDelRes0->save();
+                }
+                $ids[] = $fsPubDelRes['resource_id'];
+            }
+            $resp = $this->fs->request('delete_ids',$ids);
+        }
+        return true;
+    }
+    public function res_undelete($fsOptions0,$context){
+        $this->pdo->setConfig([
+            'class'=>'fsPubDelRes',
+            'where'=>['active'=>1,'status_id'=>2],
+            'return'=>'data',
+            'limit'=>0,
+            ]);
+        $fsPubDelRess = $this->pdo->run();
+        if(is_array($fsPubDelRess) and count($fsPubDelRess) >0){
+            $ids = [];
+            foreach($fsPubDelRess as $fsPubDelRes){
+                if($fsPubDelRes0 = $this->modx->getObject('fsPubDelRes',$fsPubDelRes['id'])){
+                    $fsPubDelRes0->active = false;
+                    $fsPubDelRes0->save();
+                }
+                $ids[] = $fsPubDelRes['resource_id'];
+            }
+            $c = $this->modx->newQuery('modResource');
+            $where = ['context_key'=>$context,'published'=>1,'deleted'=>0,'id:IN'=>$ids];
+            $c->where($where);
+            $count = $this->modx->getCount('modResource',$c);
+            //return $this->fs->success('count',['count'=>$count,'where'=>$where]);
+            $step = 100;
+            $i = 0;
+            $success = true;
+            
+            while($i<$count){
+                if($this->fs->check_lock('facetsearch_stop_uploading')){
+                    $this->fs->lock('facetsearch_uploading', false);
+                    return $this->fs->error('[FacetSearch] Empty stop_uploading');
+                }
+                $c->limit($step,$i);
+                $i += $step;
+                $resources = $this->modx->getIterator('modResource',$c);
+                $puts = [];
+                try{
+                    foreach($resources as $resource){
+                        $puts[] = $this->get_put($resource,$fsOptions0,$context);
+                    }
+                    //return $this->fs->success('123',['puts'=>$puts,'fsOptions0'=>$fsOptions0]);
+                    if(!empty($puts)){
+                        $resp = $this->fs->request('puts',$puts);
+                        //$this->modx->log(modX::LOG_LEVEL_ERROR, '[FacetSearch] upload'.print_r($resp,1).print_r($puts,1));
+                        //return $this->fs->success('break',['resp'=>$resp]);
+                        if(!$resp['success']){
+                            $success = false;
+                            $this->modx->log(modX::LOG_LEVEL_ERROR, '[FacetSearch] error upload puts '.print_r($puts,1));
+                            $this->modx->log(modX::LOG_LEVEL_ERROR, '[FacetSearch] error upload '.print_r($resp,1));
+                        }
+                    }
+                } catch (Exception $e) {
+                    $this->modx->log(1,'[FacetSearch] upload_resources Выброшено исключение: ',  $e->getMessage(), "\n");
+                    break;
+                }
+                $procent = round($i / $count, 2) * 100;
+                $this->fs->setOption('facetsearch_build_index_status', $procent);
+            }
+        }
+        return true;
+    }
     public function get_put($resource,$fsOptions,$context = 'web'){
         $put = [
             'id'=>$resource->id,
