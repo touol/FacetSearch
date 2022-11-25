@@ -5,6 +5,12 @@
 /** @var array $scriptProperties */
 /** @var FacetSearch $FacetSearch */
 if(empty($scriptProperties['parents'])) $scriptProperties['parents'] = $modx->resource->id;
+if(empty($scriptProperties['limit'])){
+    $limit = $scriptProperties['limit'] = 10;
+}else{
+    $limit = $scriptProperties['limit'];
+}
+$start_limit = $limit;
 
 $FacetSearch = $modx->getService('FacetSearch', 'FacetSearch', MODX_CORE_PATH . 'components/facetsearch/model/', $scriptProperties);
 if (!$FacetSearch) {
@@ -19,6 +25,7 @@ $limit = $modx->getOption('limit', $scriptProperties, 5);
 $outputSeparator = $modx->getOption('outputSeparator', $scriptProperties, "\n");
 $toPlaceholder = $modx->getOption('toPlaceholder', $scriptProperties, false);
 if (empty($toPlaceholders) && !empty($toPlaceholder)) {$toPlaceholders = $toPlaceholder;}
+
 
 $hash = sha1(serialize($scriptProperties));
 $_SESSION['FacetSearch'][$hash] = $scriptProperties;
@@ -44,6 +51,7 @@ $config = [
 
     'start_sort' => $start_sort,
     'sort' => $sort == $start_sort ? '' : $sort,
+    'start_limit' => $start_limit,
 ];
 if (!empty($scriptProperties['filterOptions'])) {
 	$filterOptions = $modx->fromJSON($scriptProperties['filterOptions']);
@@ -78,6 +86,7 @@ $output = [
     'total'=>$response['data']['total'],
     'pagination'=>$response['data']['pagination'],
     'sorts'=>$sorts,
+    'limit'=>$limit,
 ];
 if($response['data']['log']) $output['log'] = $response['data']['log'];
 if (!empty($toSeparatePlaceholders)) {

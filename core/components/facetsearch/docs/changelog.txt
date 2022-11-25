@@ -11,6 +11,7 @@ Changelog for FacetSearch.
 - безшовный ребилд.
 - msvendor.
 - toSeparatePlaceholders.
+- управление limit.
 
 1.0.0-beta
 ==============

@@ -16,6 +16,15 @@
             <span></span>
           </a>
         </div>
+        <div class="col-md-5">Показывать на странице
+          <select name="facetsearch_limit" class="facetsearch_limit">
+            <option value="10" {if $limit == 10}selected{/if}>10</option>
+            <option value="15" {if $limit == 15}selected{/if}>15</option>
+            <option value="25" {if $limit == 25}selected{/if}>25</option>
+            <option value="50" {if $limit == 50}selected{/if}>50</option>
+            <option value="100" {if $limit == 100}selected{/if}>100</option>
+          </select>
+        </div>
       </div>
 
       <div class="facetsearch_selected_wrapper">

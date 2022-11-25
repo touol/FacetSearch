@@ -100,7 +100,8 @@
             filters: '.facetsearch-filter',
             pagination: '.facetsearch_pagination',
             pagination_link: '.facetsearch_pagination a',
-    
+            limit: '.facetsearch_limit',
+
             sort: '.facetsearch_sort',
             sort_link: '.facetsearch_sort a',
     
@@ -151,6 +152,7 @@
 
             this.handlePagination();
             this.handleSort();
+            this.handleLimit();
 
             window.setTimeout(function() {
                 $(window).on('popstate', function (e) {
@@ -212,8 +214,28 @@
                 });
             }
         },
+        handleLimit: function () {
+            $(document).on('change', this.options.limit, function () {
+                var limit = $(this).val();
+                console.log('limit',limit);
+                FacetSearchConfig['page'] = '';
+                if (limit == FacetSearchConfig['start_limit']) {
+                    FacetSearchConfig['limit'] = '';
+                }
+                else {
+                    FacetSearchConfig['limit'] = limit;
+                }
+                var params = FacetSearch.Filter.getFilters();
+                if (FacetSearchConfig['page'] > 1 && (FacetSearchConfig['mode'] == 'scroll' || FacetSearchConfig['mode'] == 'button')) {
+                    FacetSearchConfig['page'] = '';
+                    delete(params['page']);
+                }
+                FacetSearch.Hash.set(params);
+                FacetSearch.Filter.load(params);
+            });
+        },
         handleSelected: function (input) {
-            if (!input[0]) {
+            if (!input[0] || input.hasClass('facetsearch_limit')) {
                 return;
             }
             var field = input.attr('name');
@@ -548,15 +570,15 @@
                 }
                 var item, name, values, val, type;
                 switch (elem) {
-                    // case 'limit':
-                    //     if (params['limit'] == undefined) {
-                    //         this.limit.val(FacetSearchConfig['start_limit']);
-                    //         mse2Config['limit'] = '';
-                    //     }
-                    //     else {
-                    //         this.limit.val(params['limit']);
-                    //     }
-                    //     break;
+                    case 'limit':
+                        if (params['limit'] == undefined) {
+                            this.limit.val(FacetSearchConfig['start_limit']);
+                            FacetSearchConfig['limit'] = '';
+                        }
+                        else {
+                            this.limit.val(params['limit']);
+                        }
+                        break;
                     case 'pagination':
                         FacetSearchConfig['page'] = params['page'] == undefined
                             ? ''
@@ -779,6 +801,9 @@
             });
             if (FacetSearchConfig['sort'] != '') {
                 params.sort = FacetSearchConfig['sort'];
+            }
+            if (FacetSearchConfig['limit'] != '') {
+                params.limit = FacetSearchConfig['limit'];
             }
             return params;
         },

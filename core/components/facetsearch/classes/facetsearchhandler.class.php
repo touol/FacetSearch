@@ -557,6 +557,7 @@ class FacetSearchHandler
         return $resp;
     }
     public function filter_ajax($data){
+        if(!empty($data['limit'])) $this->config['limit'] = $data['limit'];
         $fsOptions = $this->getActiveOptions();
         $filters0 = array_map('trim', explode(',', $this->config['filters']));
         $filters = [];
