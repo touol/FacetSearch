@@ -9,7 +9,7 @@
 5 - синхонизация опубликовано удалено
 6 - синхронизация msimportexport
 7 - загрузка tv
-8 - filter label из словаря
+    8 - filter label из словаря
 9 - безшовный ребилд
 10 - msvendor
 11 - separetePlaceholders

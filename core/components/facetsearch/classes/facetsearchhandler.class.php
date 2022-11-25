@@ -572,7 +572,7 @@ class FacetSearchHandler
                             $idx++;
                         }
                         $filter['rows'] = implode("\r\n",$rows);
-                        if(empty($filter['label'])) $filter['label'] = 'facetsearch_field_'.$filter['alias'];
+                        if(empty($filter['label'])) $filter['label'] = $this->modx->lexicon('facetsearch_field_'.$filter['alias']);
                         if($selected_empty) $filter['selected'] = 'selected';
                         $filters_out[$field] = $this->pdo->getChunk($tplOuter, $filter);
                 }
