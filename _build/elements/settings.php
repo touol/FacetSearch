@@ -54,7 +54,8 @@ return [
                 [1,"Ресурс"],
                 [2,"ms"],
                 [3,"msoption"],
-                [4,"TV"]
+                [4,"TV"],
+                [5,"msvendor"]
               ]
             },
             "option_type": {

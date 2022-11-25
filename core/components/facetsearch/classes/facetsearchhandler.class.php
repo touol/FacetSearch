@@ -76,6 +76,18 @@ class FacetSearchHandler
                     }
                 }
             }
+            //msVendor
+            if(!$opt = $this->modx->getObject("fsOption",['class_id'=>5,'key'=>'name'])){
+                if($opt = $this->modx->newObject("fsOption",[
+                    'class_id'=>5,
+                    'key'=>'name',
+                    'alias'=>'vendor',
+                    'label'=>'Бренд',
+                    'active'=>0,
+                    ])){
+                        $opt->save();
+                    }
+            }
         }
         //TV
         $this->pdo->setConfig([
@@ -141,6 +153,10 @@ class FacetSearchHandler
                 case 4:
                     $key = 'TV';
                 break;
+                case 5:
+                    $key = 'msVendor';
+                break;
+                
             }
             $fsOptions0[$key][] = $fsOption;
         }
@@ -322,6 +338,40 @@ class FacetSearchHandler
                                 $put[$o['alias']] = $arr;
                             }
                         break;
+                    }
+                }
+            }
+        }
+        //msVendor 5
+        if(isset($fsOptions['msVendor'])){
+            if($msProductData = $this->modx->getObject('msProductData',$resource->id)){
+                if($msVendor = $this->modx->getObject('msVendor',$msProductData->vendor)){
+                    foreach($fsOptions['msVendor'] as $o){
+                        $val = $msVendor->get($o['key']);
+                        if(empty($val)) continue;
+                        switch($o['option_type_id']){
+                            case 1:
+                                $put[$o['alias']] = $val;
+                            break;
+                            case 2:
+                                $put[$o['alias']] = (float)str_replace(',','.',$val);
+                            break;
+                            case 3:
+                                $arr = $val;
+                                if(!empty($arr)){
+                                    foreach($arr as &$msv){
+                                        $msv = (float)str_replace(',','.',$msv);
+                                    }
+                                    $put[$o['alias']] = $arr;
+                                }
+                            break;
+                            case 4:
+                                $arr = $val;
+                                if(!empty($arr)){
+                                    $put[$o['alias']] = $arr;
+                                }
+                            break;
+                        }
                     }
                 }
             }
