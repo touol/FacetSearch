@@ -361,8 +361,39 @@ class FacetSearchHandler
         //TV 4
         if(isset($fsOptions['TV'])){
             foreach($fsOptions['TV'] as $o){
-                $values  = $resource->getTVValue($o['key']);
-                if(!empty($values)) $put[$o['alias']] = $values;
+                if($tv = $this->modx->getObject('modTemplateVar', ['name'=>$o['key']])){
+                    $tvr = $this->modx->getObject('modTemplateVarResource', [
+                        'tmplvarid' => $tv->id,
+                        'contentid' => $resource->id
+                    ]);
+                    if ($tvr) {
+                        $values = $tvr->get('value');
+                    }else if ($tv) $values = $tv->get('default_text');
+                    
+                    //$values  = $resource->getTVValue($o['key']);
+                    if(!empty($values)){
+                        switch($o['option_type_id']){
+                            case 1:
+                                $put[$o['alias']] = $values;
+                            break;
+                            case 2:
+                                $put[$o['alias']] = (float)str_replace(',','.',$values);
+                            break;
+                            case 3:
+                                $values = explode('||',$values);
+                                foreach($values as $v){
+                                    $put[$o['alias']][] = (float)str_replace(',','.',$v);
+                                }
+                            break;
+                            case 4:
+                                $values = explode('||',$values);
+                                foreach($values as $v){
+                                    $put[$o['alias']][] = $v;
+                                }
+                            break;
+                        }
+                    }
+                }
             }
         }
         return $put;
@@ -645,10 +676,17 @@ class FacetSearchHandler
                             $checked = in_array($val['key'],$request_vals);
                             if($checked) $selected_empty = false;
                             //$this->fs->addTime("{$val['key']} $checked request_vals".print_r($request_vals,1));
+                            $title = $val['key'];
+                            
+                            switch($filter['option_type_id']){
+                                case 2:case 3:
+                                    $title = str_replace('.',',',$title);
+                                break;
+                            }
                             $rows[] = $this->pdo->getChunk($tplRow, [
                                 'filter_key'=>$field,
                                 'value'=>$val['key'],
-                                'title'=>$val['key'],
+                                'title'=>$title,
                                 'num'=>$val['doc_count'],
                                 'checked'=>$checked?'checked':'',
                                 'selected'=>$checked?'selected':'',
