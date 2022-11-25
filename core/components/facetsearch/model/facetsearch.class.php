@@ -159,14 +159,18 @@ class FacetSearch
         if($uploading) return $this->error("Не удалось останавить загрузку индекса!");
         //$resp = $this->request('delete_index',[]);
         $this->setOption('facetsearch_last_upload', '');
-        
-        $resp = $this->mapping_index();
+        $resp = $this->request('rebuild_index',[]);
         if(!$resp['success']){
             $resp['message'] = "Не удалось обновить индекс!";
             return $resp;
         } 
+        $respm = $this->mapping_index();
+        if(!$respm['success']){
+            $respm['message'] = "Не удалось обновить индекс!";
+            return $respm;
+        } 
         $this->lock('facetsearch_stop_uploading', false);
-        return $this->success("Ребилд начат");
+        return $this->success("Ребилд начат",['rebuild_index'=>$resp,'mapping_index'=>$respm]);
     }
     public function create_index(){
         $this->lock('facetsearch_stop_uploading', true);

@@ -161,7 +161,7 @@ class FacetSearchHandler
         while($i<$count){
             if($this->fs->check_lock('facetsearch_stop_uploading')){
                 $this->fs->lock('facetsearch_uploading', false);
-                return $this->fs->error('[FacetSearch] Empty stop_uploading');
+                return $this->fs->error('[FacetSearch] facetsearch_stop_uploading');
             }
             $c->limit($step,$i);
             $i += $step;
@@ -193,7 +193,7 @@ class FacetSearchHandler
         if($success){
             $this->fs->setOption('facetsearch_last_upload', date('Y-m-d H:i:s'));
         }
-        
+        if(empty($last_upload)) $resp = $this->fs->request('index_builded',[]);
         //fsPubDelRes
         $success = $this->res_delete();
         $success = $this->res_undelete($fsOptions0,$context);
