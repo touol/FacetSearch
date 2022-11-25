@@ -34,9 +34,11 @@
       </div>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
-      <pre class="FacetSearchLog">{$log}</pre>
+  {if $log}
+    <div class="row">
+      <div class="col-md-12">
+        <pre class="FacetSearchLog">{$log}</pre>
+      </div>
     </div>
-  </div>
+  {/if}
 </div>

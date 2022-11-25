@@ -77,8 +77,8 @@ $output = [
     'total'=>$response['data']['total'],
     'pagination'=>$response['data']['pagination'],
     'sorts'=>$sorts,
-    'log'=>$response['data']['log'],
 ];
+if($response['data']['log']) $output['log'] = $response['data']['log'];
 // Output
 $output = $FacetSearch->pdo->getChunk($scriptProperties['tplOuter'], $output);
 // if (!empty($toPlaceholder)) {

@@ -384,7 +384,9 @@ class FacetSearchHandler
         
         $resp['data']['filters'] = $filters;
         $resp['data']['pagination'] = $pagination;
-        $resp['data']['log'] = $this->fs->getTime();
+        if ($this->modx->user->hasSessionContext('mgr') && !empty($this->config['showLog'])) {
+            $resp['data']['log'] = $this->fs->getTime();
+        }
         return $resp;
     }
     public function filter_ajax($data){
@@ -416,7 +418,9 @@ class FacetSearchHandler
         $resp['data']['pagination'] = $pagination;
         $resp['data']['pages'] = $pages;
         $resp['data']['page'] = $page;
-        $resp['data']['log'] = $this->fs->getTime();
+        if ($this->modx->user->hasSessionContext('mgr') && !empty($this->config['showLog'])) {
+            $resp['data']['log'] = $this->fs->getTime();
+        }
         return $resp;
     }
     public function get_aggs($request,$filters){
