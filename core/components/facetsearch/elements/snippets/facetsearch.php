@@ -39,6 +39,7 @@ $config = [
     'moreText' => 'Загрузить еще',//$modx->lexicon('mse2_more'),
     'pageVar' => $scriptProperties['pageVarKey'],
     'page' => $page,
+    'pageId' => $modx->resource->id,
 
     'start_sort' => $start_sort,
     'sort' => $sort == $start_sort ? '' : $sort,
@@ -62,13 +63,20 @@ $FacetSearch->addTime('FacetSearch start');
 $response = $FacetSearch->handleRequest('filter',$_REQUEST);
 //$results = $response['data']['results'];
 $filters = implode("\r\n",$response['data']['filters']);
+$sorts = [];
+if($sort){
+    $sorts0 = explode(',',$sort);
+    foreach($sorts0 as $sort){
+        $sorts[$sort] = 1;
+    }
+}
 $output = [
     'hash'=>$hash,
     'filters'=>$filters,
     'results'=>$response['data']['results'],
     'total'=>$response['data']['total'],
     'pagination'=>$response['data']['pagination'],
-    'sort'=>$sort == $start_sort ? '' : $sort,
+    'sorts'=>$sorts,
     'log'=>$response['data']['log'],
 ];
 // Output

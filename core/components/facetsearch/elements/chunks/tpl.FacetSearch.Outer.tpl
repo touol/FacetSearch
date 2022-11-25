@@ -8,8 +8,11 @@
       <div class="row">
         <div class="facetsearch_sort span5 col-md-5">
           Сортировка:
-            <a href="#" data-sort="pagetitle" data-dir="{if $sort == 'pagetitle:asc'}asc{/if}" data-default="asc" class="sort">
+            <a href="#" data-sort="pagetitle" data-dir="{if $sorts['pagetitle:asc']}asc{/if}" data-default="asc" class="sort">
             По наименованию
+            <span></span>
+            <a href="#" data-sort="publishedon" data-dir="{if $sorts['publishedon:asc']}asc{/if}" data-default="asc" class="sort">
+            По публикации
             <span></span>
           </a>
         </div>

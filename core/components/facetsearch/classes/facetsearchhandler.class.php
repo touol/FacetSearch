@@ -303,7 +303,14 @@ class FacetSearchHandler
         } else {
             return false;
         }
-        
+        // Base url for pdoPage
+        if ($this->modx->getOption('friendly_urls')) {
+            $q_var = $this->modx->getOption('request_param_alias', null, 'q');
+            $_REQUEST[$q_var] = $this->modx->makeUrl((int)$_REQUEST['pageId']);
+        } else {
+            $id_var = $this->modx->getOption('request_param_id', null, 'id');
+            $_GET[$id_var] = (int)$_REQUEST['pageId'];
+        }
         $url = $pdoPage->getBaseUrl();
         if(empty((int)$request['page'])){
             $page = 1;
@@ -312,7 +319,7 @@ class FacetSearchHandler
         }
         $offset = $page*$this->config['limit'];
         $pageCount = !empty($this->config['limit']) && $total > $offset
-        ? ceil(($total - $offset) / $this->config['limit'])
+        ? ceil(($total) / $this->config['limit'])
         : 0;
         $tplPage = $this->config['tplPage'];
         $tplPageFirst = $this->config['tplPageFirst'];
@@ -392,22 +399,29 @@ class FacetSearchHandler
             $filters[$filter[0]]['type'] = $filter[1];
         }
         $resp = $this->get_results($data,$filters);
-        $aggs = $this->get_aggs($data,$filters);
+        if(!isset($data['no_aggs']) or $data['no_aggs'] != 1){
+            $aggs = $this->get_aggs($data,$filters);
+        }
         $pagination = $this->pagination($data,$resp['data']['total']);
         
         $pages = !empty($this->config['limit']) && $resp['data']['total'] > $this->config['limit']
         ? ceil(($resp['data']['total']) / $this->config['limit'])
         : 0;
-
+        if(empty((int)$data['page'])){
+            $page = 1;
+        }else{
+            $page = (int)$data['page'];
+        }
         $resp['data']['aggs'] = $aggs;
         $resp['data']['pagination'] = $pagination;
         $resp['data']['pages'] = $pages;
+        $resp['data']['page'] = $page;
         $resp['data']['log'] = $this->fs->getTime();
         return $resp;
     }
     public function get_aggs($request,$filters){
         
-        $filters = $this->get_filters_aggs($request,$filters);
+        $filters = $this->get_filters_aggs($request,$filters,false);
         $aggs = [];
         foreach($filters as $field=>$filter){
             switch($filter['type']){
@@ -563,7 +577,7 @@ class FacetSearchHandler
         return $filters_out;
     }
     
-    public function get_query_aggs($request,$filters){
+    public function get_query_aggs($request,$filters,$get_all_filters = true){
         $size = $this->config['aggs_size'];
         $main_filter=[]; $aggs = [];
         
@@ -586,11 +600,13 @@ class FacetSearchHandler
                 ];
             }
         }
-        foreach($filters as $field => $filter){
-            switch($filter['type']){
-                case 'number':break;
-                default:
-                    $aggs[$field] = ['terms'=>['field'=>$field,'size'=>$size]];
+        if($get_all_filters){
+            foreach($filters as $field => $filter){
+                switch($filter['type']){
+                    case 'number':break;
+                    default:
+                        $aggs[$field] = ['terms'=>['field'=>$field,'size'=>$size]];
+                }
             }
         }
         $inactive_filter = $main_filter;
@@ -784,8 +800,11 @@ class FacetSearchHandler
             $sort = $request['sort'];
         }
         if($sort){
-            $sort = explode(':',$sort);
-            $query['sort'] = [[$sort[0]=>['order'=>$sort[1]]]];
+            $sorts = explode(',',$sort);
+            foreach($sorts as $sort){
+                $sort = explode(':',$sort);
+                $query['sort'] = [[$sort[0]=>['order'=>$sort[1]]]];
+            }
         }
         if(!empty((int)$request['page'])){
             $query['from'] = (int)$request['page']*$this->config['limit'];

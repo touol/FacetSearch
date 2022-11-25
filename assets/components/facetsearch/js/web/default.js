@@ -321,6 +321,7 @@
             if (!params || !Object.keys(params).length) {
                 params = this.getFilters();
             }
+            params.pageId = FacetSearchConfig['pageId'];
             let action = 'filter_ajax';
             $FacetSearchOuter = $(FacetSearch.Filter.options['wrapper']);
             formData ={
