@@ -694,7 +694,7 @@
             for (var alias in aggs){
                 var is_slider = typeof(FacetSearch.Slider.sliders[alias]) != 'undefined';
                 if (is_slider && !FacetSearch.Slider.sliders[alias]['user_changed']) {
-                    FacetSearch.Slider.setAggs($FacetSearchOuter,alias,aggs[alias]);
+                    FacetSearch.Slider.setAggs(alias,aggs[alias]);
                 }else{
                     $filter = $FacetSearchOuter.find('.facetsearch-'+alias);
                     if($filter.length != 1) continue;
@@ -811,7 +811,7 @@
     };
     FacetSearch.Slider = {
         sliders: {},
-        setAggs: function ($FacetSearchOuter,alias,arr) {
+        setAggs: function (alias,arr) {
             var vmin = null;
             var vmax = null;
             for (value in arr) {
