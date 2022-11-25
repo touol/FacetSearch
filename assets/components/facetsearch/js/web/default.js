@@ -317,11 +317,13 @@
             FacetSearch.Hash.set(params);
             this.load(params);
         },
-        load: function (params, callback, append) {
+        load: function (params, callback, append, no_aggs) {
             if (!params || !Object.keys(params).length) {
                 params = this.getFilters();
             }
             params.pageId = FacetSearchConfig['pageId'];
+            if(no_aggs) params.no_aggs = 1;
+             
             let action = 'filter_ajax';
             $FacetSearchOuter = $(FacetSearch.Filter.options['wrapper']);
             formData ={
@@ -400,7 +402,7 @@
                     FacetSearch.Hash.set(tmp);
     
                     var params = FacetSearch.Filter.getFilters();
-                    FacetSearch.Filter.load(params, null, true);
+                    FacetSearch.Filter.load(params, null, true, true);
                     return false;
                 }
             });
@@ -451,7 +453,7 @@
                     delete(params['page']);
                 }
                 FacetSearch.Hash.set(params);
-                FacetSearch.Filter.load(params);
+                FacetSearch.Filter.load(params, null, false, true);
     
                 return false;
             });
