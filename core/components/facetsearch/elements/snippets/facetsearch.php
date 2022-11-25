@@ -18,6 +18,7 @@ $sortdir = $modx->getOption('sortbir', $scriptProperties, 'ASC');
 $limit = $modx->getOption('limit', $scriptProperties, 5);
 $outputSeparator = $modx->getOption('outputSeparator', $scriptProperties, "\n");
 $toPlaceholder = $modx->getOption('toPlaceholder', $scriptProperties, false);
+if (empty($toPlaceholders) && !empty($toPlaceholder)) {$toPlaceholders = $toPlaceholder;}
 
 $hash = sha1(serialize($scriptProperties));
 $_SESSION['FacetSearch'][$hash] = $scriptProperties;
@@ -79,13 +80,16 @@ $output = [
     'sorts'=>$sorts,
 ];
 if($response['data']['log']) $output['log'] = $response['data']['log'];
-// Output
-$output = $FacetSearch->pdo->getChunk($scriptProperties['tplOuter'], $output);
-// if (!empty($toPlaceholder)) {
-//     // If using a placeholder, output nothing and set output to specified placeholder
-//     $modx->setPlaceholder($toPlaceholder, $output);
-
-//     return '';
-// }
-// By default just return output
-return $output;
+if (!empty($toSeparatePlaceholders)) {
+	$modx->setPlaceholders($filters, $toSeparatePlaceholders);
+	$modx->setPlaceholders($output, $toSeparatePlaceholders);
+}
+else {
+	if (!empty($toPlaceholders)) {
+		$output['log'] = $log;
+		$modx->setPlaceholders($output, $toPlaceholders);
+	}else {
+		return $FacetSearch->pdo->getChunk($scriptProperties['tplOuter'], $output);
+	}
+}
+return;

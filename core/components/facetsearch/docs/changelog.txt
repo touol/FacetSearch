@@ -10,6 +10,7 @@ Changelog for FacetSearch.
 - загрузка tv.
 - безшовный ребилд.
 - msvendor.
+- toSeparatePlaceholders.
 
 1.0.0-beta
 ==============

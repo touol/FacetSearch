@@ -12,7 +12,7 @@
     8 - filter label из словаря
     9 - безшовный ребилд
     10 - msvendor
-11 - separetePlaceholders
+    11 - toSeparatePlaceholders
 12 - управление limit
 
 ## Доработки сервиса
