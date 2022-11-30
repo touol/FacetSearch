@@ -52,6 +52,7 @@ $config = [
     'start_sort' => $start_sort,
     'sort' => $sort == $start_sort ? '' : $sort,
     'start_limit' => $start_limit,
+    'limit' => $limit == $start_limit ? '' : $limit,
 ];
 if (!empty($scriptProperties['filterOptions'])) {
 	$filterOptions = $modx->fromJSON($scriptProperties['filterOptions']);

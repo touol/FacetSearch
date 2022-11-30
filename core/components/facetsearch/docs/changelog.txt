@@ -2,6 +2,8 @@ Changelog for FacetSearch.
 1.1.6-beta
 ==============
 - Сортировка опция по алфавиту А - Я.
+- кнопка сброса, как в mFilter.
+- limited в url.
 
 1.1.5-beta
 ==============

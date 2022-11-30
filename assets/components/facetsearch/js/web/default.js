@@ -98,6 +98,7 @@
         options: {
             wrapper: '.facetsearch-outer',
             filters: '.facetsearch-filter',
+            filters_form: '.facetsearch-filter-form',
             pagination: '.facetsearch_pagination',
             pagination_link: '.facetsearch_pagination a',
             limit: '.facetsearch_limit',
@@ -115,6 +116,7 @@
             filter_title: '.filter-title',
             
             more: '.btn_more',
+            btn_reset: '.btn_reset',
             more_tpl: '<button class="btn btn-default btn_more">' + FacetSearchConfig['moreText'] + '</button>',
             more_wraper: '.facetsearch_btm_more',
 
@@ -149,6 +151,10 @@
                 
             });
             
+            $(document).on('click', this.options.btn_reset, function (e) {
+                e.preventDefault();
+                return FacetSearch.Filter.reset();
+            });
 
             this.handlePagination();
             this.handleSort();
@@ -214,10 +220,38 @@
                 });
             }
         },
+        reset: function () {
+            if (this.loading) {
+                return false;
+            }
+            var service = ['sort', 'limit'];
+            var hash = FacetSearch.Hash.get();
+            var data = {};
+            FacetSearch.Hash.clear();
+            for (var i in service) {
+                if (!service.hasOwnProperty(i)) {
+                    continue;
+                }
+                var item = service[i];
+                if (hash[item] != undefined) {
+                    data[item] = hash[item];
+                }
+            }
+            console.log(data);
+            this.setFilters(data);
+            for (var value in FacetSearch.Slider.sliders) {
+                if (FacetSearch.Slider.sliders.hasOwnProperty(value)) {
+                    FacetSearch.Slider.sliders[value]['changed'] =
+                    FacetSearch.Slider.sliders[value]['user_changed'] = false;
+                }
+            }
+            
+            return this.submit();
+        },
         handleLimit: function () {
             $(document).on('change', this.options.limit, function () {
                 var limit = $(this).val();
-                console.log('limit',limit);
+                //console.log('limit',limit);
                 FacetSearchConfig['page'] = '';
                 if (limit == FacetSearchConfig['start_limit']) {
                     FacetSearchConfig['limit'] = '';

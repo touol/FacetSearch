@@ -1,7 +1,15 @@
 <div class="facetsearch-outer" data-hash="{$hash}" data-category_id="{$category_id}">
   <div class="row">
     <div class="col-md-3">
-      {$filters}
+      <form action="{$_modx->resource.id | url}" method="post" class="facetsearch-filter-form">
+        {$filters}
+        {if $filters}
+          <div class="d-flex justify-content-between">
+              <button type="reset" class="btn btn-light btn_reset">Сбросить</button>
+              <button type="submit" class="btn btn-primary hidden">Отправить</button>
+          </div>
+        {/if}
+      </form>
     </div>
     <div class="col-md-9">
       <h3>Всего результатов: <span class="facetsearch-total">{$total}</span></h3>

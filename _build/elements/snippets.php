@@ -73,7 +73,7 @@ return [
                     ['text' => 'asc', 'value' => 'asc'],
                     ['text' => 'desc', 'value' => 'desc'],
                 ],
-                'value' => 'default',
+                'value' => 'count',
             ],
             'pageVarKey' => [
                 'type' => 'textfield',
