@@ -1,4 +1,5 @@
 <?php
+$start_time = microtime(true);
 if (empty($_REQUEST['action']) and empty($_REQUEST['facetsearch_action'])) {
     $message = 'Access denied action.php';
     echo json_encode(
@@ -30,6 +31,6 @@ if(!$facetsearch = $modx->getService("facetsearch","facetsearch",
 $modx->lexicon->load('facetsearch:default');
 
 $response = $facetsearch->handleRequest($_REQUEST['action'],$_REQUEST);
-
+$response['time'] = microtime(true) - $start_time;
 echo json_encode($response);
 exit;

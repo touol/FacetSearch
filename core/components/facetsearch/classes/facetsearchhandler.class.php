@@ -785,6 +785,9 @@ class FacetSearchHandler
                     case 'number':break;
                     default:
                         $aggs[$field] = ['terms'=>['field'=>$field,'size'=>$size]];
+                        if($this->config['sortOption'] != 'count'){
+                            $aggs[$field]['terms']['order'] = ['_term'=>$this->config['sortOption']];
+                        }
                 }
             }
         }

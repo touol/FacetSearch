@@ -66,7 +66,15 @@ return [
                 ],
                 'value' => 'default',
             ],
-            
+            'sortOption' => [
+                'type' => 'list',
+                'options' => [
+                    ['text' => 'count', 'value' => 'count'],
+                    ['text' => 'asc', 'value' => 'asc'],
+                    ['text' => 'desc', 'value' => 'desc'],
+                ],
+                'value' => 'default',
+            ],
             'pageVarKey' => [
                 'type' => 'textfield',
                 'value' => 'page',
