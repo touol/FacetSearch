@@ -5,7 +5,7 @@
         {$filters}
         {if $filters}
           <div class="d-flex justify-content-between">
-              <button type="reset" class="btn btn-light btn_reset">Сбросить</button>
+              <button type="reset" class="btn btn-light btn_reset hidden">Сбросить</button>
               <button type="submit" class="btn btn-primary hidden">Отправить</button>
           </div>
         {/if}

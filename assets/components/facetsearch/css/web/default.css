@@ -2,6 +2,9 @@
     max-height: 300px;
     overflow: auto;
 }
+.facetsearch-filter-outer label{
+    display:block;
+}
 .facetsearch_sort .sort[data-dir="desc"] span::after {
     content: "↓";
 }
@@ -18,7 +21,9 @@
 }
 .facetsearch-outer .disabled {
     color: #aaa;
+    display: none;
 }
+
 .facetsearch-results {
     margin-bottom: 20px;
 }

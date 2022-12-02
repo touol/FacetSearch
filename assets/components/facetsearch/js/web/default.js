@@ -95,6 +95,7 @@
             load: FacetSearchConfig.callbacksObjectTemplate(),
         },
         reached: false,
+        loading: false,
         options: {
             wrapper: '.facetsearch-outer',
             filters: '.facetsearch-filter',
@@ -121,6 +122,8 @@
             more_wraper: '.facetsearch_btm_more',
 
             active_class: 'active',
+            disabled_class: 'disabled',
+            loading_class: 'loading',
     
         },
         selections: {},
@@ -140,6 +143,20 @@
                     this[elem] = $('body').find(this.options[elem]);
                 }
             }
+            
+
+            $(document).on('submit', this.options.filters, function () {
+                return mSearch2.submit();
+            });
+
+            this.btn_reset = $(this.options.btn_reset);
+            $(document).on('click', this.options.btn_reset, function (e) {
+                e.preventDefault();
+                return FacetSearch.Filter.reset();
+            });
+            if (Object.keys(FacetSearch.Hash.get()).length) {
+                this.btn_reset.removeClass('hidden');
+            }
         },
         initialize: function () {
             FacetSearch.Filter.setup();
@@ -151,10 +168,7 @@
                 
             });
             
-            $(document).on('click', this.options.btn_reset, function (e) {
-                e.preventDefault();
-                return FacetSearch.Filter.reset();
-            });
+            
 
             this.handlePagination();
             this.handleSort();
@@ -374,6 +388,16 @@
             this.load(params);
         },
         load: function (params, callback, append, no_aggs) {
+            if (this.loading) {
+                return false;
+            } else {
+                this.loading = true;
+            }
+            if (Object.keys(params).length) {
+                this.btn_reset.removeClass('hidden');
+            } else {
+                this.btn_reset.addClass('hidden');
+            }
             if (!params || !Object.keys(params).length) {
                 params = this.getFilters();
             }
@@ -398,12 +422,13 @@
             
             var callbacks = FacetSearch.Filter.callbacks;
             callbacks.load.response.success = function (response) {
-                
+                FacetSearch.Filter.loading = false;
+                FacetSearch.Filter.afterLoad();
                 if(response.data.total !== ''){
                     $(FacetSearch.Filter.options['wrapper']).find('.facetsearch-total').html(response.data.total);
                 }
                 if(response.data.results){
-                    //$(FacetSearch.Filter.options['wrapper']).find('.facetsearch-results').html(response.data.results);
+                    
                     if (append) {
                         $(FacetSearch.Filter.options['wrapper']).find('.facetsearch-results').append(response['data']['results']);
                     }
@@ -440,9 +465,21 @@
                 }
                 $(document).trigger('mse2_load', response);
             };
-            
+            this.beforeLoad();
             FacetSearch.send(FacetSearch.sendData.formData, FacetSearch.Filter.callbacks.load);
             
+        },
+        beforeLoad: function () {
+            $(this.options['wrapper']).addClass(this.options['loading_class']);
+            this.results.css('opacity', .5);
+            $(this.options.pagination_link).addClass(this.options.active_class);
+            this.filters.find('input, select').prop('readonly', true).addClass(this.options.disabled_class);
+        },
+    
+        afterLoad: function () {
+            $(this.options['wrapper']).removeClass(this.options['loading_class']);
+            this.results.css('opacity', 1);
+            this.filters.find('.' + this.options.disabled_class).prop('readonly', false).removeClass(this.options.disabled_class);
         },
         addPage: function () {
             var pcre = new RegExp(FacetSearchConfig['pageVar'] + '[=|\/|-](\\d+)');

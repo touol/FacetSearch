@@ -307,7 +307,30 @@ class FacetSearchHandler
         //resource 1
         if(isset($fsOptions['resource'])){
             foreach($fsOptions['resource'] as $o){
-                $put[$o['alias']] = $resource->get($o['key']);
+                $val = $resource->get($o['key']);
+                switch($o['option_type_id']){
+                    case 1:
+                        $put[$o['alias']] = $val;
+                    break;
+                    case 2:
+                        $put[$o['alias']] = (float)str_replace(',','.',$val);
+                    break;
+                    case 3:
+                        $arr = $val;
+                        if(!empty($arr)){
+                            foreach($arr as &$msv){
+                                $msv = (float)str_replace(',','.',$msv);
+                            }
+                            $put[$o['alias']] = $arr;
+                        }
+                    break;
+                    case 4:
+                        $arr = $val;
+                        if(!empty($arr)){
+                            $put[$o['alias']] = $arr;
+                        }
+                    break;
+                }
             }
         }
         //msProductData 2
@@ -920,6 +943,7 @@ class FacetSearchHandler
         }else{
             $this->fs->addTime('filter not element');
         }
+        if(!$results) $results = "Подходящих результатов не найдено.";
         return $this->fs->success('',['total'=>$total,'results'=>$results]);
     }
     public function get_query($request,$filters){
