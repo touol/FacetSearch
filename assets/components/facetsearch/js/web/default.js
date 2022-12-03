@@ -251,7 +251,7 @@
                     data[item] = hash[item];
                 }
             }
-            console.log(data);
+            
             this.setFilters(data);
             for (var value in FacetSearch.Slider.sliders) {
                 if (FacetSearch.Slider.sliders.hasOwnProperty(value)) {

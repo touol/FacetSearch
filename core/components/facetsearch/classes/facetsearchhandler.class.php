@@ -627,7 +627,8 @@ class FacetSearchHandler
                 break;
                 default:
                     foreach($filter['vals'] as $val){
-                        $aggs[$field][$val['key']] = $val['doc_count']; 
+                        $val2 = str_replace(',','%2C',$val['key']);
+                        $aggs[$field][$val2 ] = $val['doc_count']; 
                     }
             }
         }
@@ -639,7 +640,7 @@ class FacetSearchHandler
         $resp = $this->fs->request('search',$query);
         $this->fs->addTime('end get_filters_aggs');
         //$this->fs->addTime('end get_filters_aggs'.print_r($resp,1));
-        //$this->fs->addTime('end get_filters_aggs'.json_encode($query, JSON_PRETTY_PRINT));
+        //$this->fs->addTime('end get_filters_aggs query'.json_encode($query, JSON_PRETTY_PRINT));
         $aggregations = $resp['data']['outs']['aggregations'];
         
         foreach($filters as $field=>$filter){
@@ -705,6 +706,9 @@ class FacetSearchHandler
             $request_vals = [];
             if(!empty($request[$field])){
                 $request_vals = explode(',',$request[$field]);
+                foreach($request_vals as $k=>$v){
+                    foreach($request_vals as $k=>$v){ $request_vals[$k] = str_replace('%2C',',',$v);}
+                }
             }
             
             if(!empty($filter['vals'])){
@@ -759,7 +763,7 @@ class FacetSearchHandler
                             }
                             $rows[] = $this->pdo->getChunk($tplRow, [
                                 'filter_key'=>$field,
-                                'value'=>$val['key'],
+                                'value'=>str_replace(',','%2C',$val['key']),
                                 'title'=>$title,
                                 'num'=>$val['doc_count'],
                                 'checked'=>$checked?'checked':'',
@@ -795,9 +799,12 @@ class FacetSearchHandler
                 $addFilters = json_decode($this->config['addFilters'],1);
             }
             foreach($addFilters as $field => $vals){
+                $vals2 = array_map('trim', explode(',', $vals));
+                foreach($vals2 as $k=>$v){ $vals2[$k] = str_replace('%2C',',',$v);}
+                
                 $main_filter[] = [
                     'terms'=>[
-                        $field=>array_map('trim', explode(',', $vals))
+                        $field=>$vals2
                     ]
                 ];
             }
@@ -834,9 +841,11 @@ class FacetSearchHandler
                         $inactive_fields[] = $field;
                     break;
                     default:
+                        $vals2 = explode(',',$request[$field]);
+                        foreach($vals2 as $k=>$v){ $vals2[$k] = str_replace('%2C',',',$v);}
                         $inactive_filter[$field] = [
                             'terms'=>[
-                                $field=>explode(',',$request[$field])
+                                $field=>$vals2
                             ]
                         ]; 
                         $active_fields[] = $field;
@@ -960,9 +969,11 @@ class FacetSearchHandler
                 $addFilters = json_decode($this->config['addFilters'],1);
             }
             foreach($addFilters as $field => $vals){
+                $vals2 = array_map('trim', explode(',', $vals));
+                foreach($vals2 as $k=>$v){ $vals2[$k] = str_replace('%2C',',',$v);}
                 $query_filter[] = [
                     'terms'=>[
-                        $field=>array_map('trim', explode(',', $vals))
+                        $field=>$vals2 
                     ]
                 ];
             }
@@ -979,9 +990,11 @@ class FacetSearchHandler
                         ];
                     break;
                     default:
+                        $vals2 = explode(',',$request[$field]);
+                        foreach($vals2 as $k=>$v){ $vals2[$k] = str_replace('%2C',',',$v);}
                         $query_filter[] = [
                             'terms'=>[
-                                $field=>explode(',',$request[$field])
+                                $field=>$vals2
                             ]
                         ]; 
                 }
@@ -1018,25 +1031,5 @@ class FacetSearchHandler
         
         return $query;
     }
-    /*
-    GET mftest.loc/_search
-    {
-    "query": {
-        "bool": {
-        "filter": [ 
-            { "terms":  { "parent_ids": [5] }},
-            { 
-            "range": {
-                "size": {
-                "gte": 0,
-                "lte": 60
-                }
-            }
-            }
-        ]
-        }
-    }
-    }
-    */
     
 }
