@@ -4,7 +4,7 @@
 /** @var modX $modx */
 /** @var array $scriptProperties */
 /** @var FacetSearch $FacetSearch */
-if(empty($scriptProperties['parents'])) $scriptProperties['parents'] = $modx->resource->id;
+if(empty($scriptProperties['parents']) and $scriptProperties['parents'] !== '0') $scriptProperties['parents'] = $modx->resource->id;
 if(empty($scriptProperties['limit'])){
     $limit = $scriptProperties['limit'] = 10;
 }else{
