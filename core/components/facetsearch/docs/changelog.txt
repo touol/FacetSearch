@@ -1,4 +1,7 @@
 Changelog for FacetSearch.
+1.1.15-beta
+==============
+- Все функции OpenSearch в хендлер.
 
 1.1.14-beta
 ==============

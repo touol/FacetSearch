@@ -157,119 +157,8 @@ class FacetSearch
             if(file_exists($this->config['corePath'].$lock_set.'.lock')) unlink($this->config['corePath'].$lock_set.'.lock');
         }
     }
-    public function rebuild_index(){
-        $this->lock('facetsearch_stop_uploading', true);
-        $uploading = $this->check_lock('facetsearch_uploading');
-        $i = 0;
-        while($i < 40 and $uploading){
-            sleep(1);
-            $uploading = $this->check_lock('facetsearch_uploading');
-            $i++;
-        }
-        if($uploading) return $this->error("Не удалось останавить загрузку индекса!");
-        //$resp = $this->request('delete_index',[]);
-        $this->setOption('facetsearch_last_upload', '');
-        $resp = $this->request('rebuild_index',[]);
-        if(!$resp['success']){
-            $resp['message'] = "Не удалось обновить индекс!";
-            return $resp;
-        } 
-        $respm = $this->mapping_index();
-        if(!$respm['success']){
-            $respm['message'] = "Не удалось обновить индекс!";
-            return $respm;
-        } 
-        $this->lock('facetsearch_stop_uploading', false);
-        return $this->success("Ребилд начат",['rebuild_index'=>$resp,'mapping_index'=>$respm]);
-    }
-    public function create_index(){
-        $this->lock('facetsearch_stop_uploading', true);
-        $uploading = $this->check_lock('facetsearch_uploading');
-        $i = 0;
-        while($i < 40 and $uploading){
-            sleep(1);
-            $uploading = $this->check_lock('facetsearch_uploading');
-            $i++;
-        }
-        if($uploading) return $this->error("Не удалось останавить загрузку индекса!");
-        //$resp = $this->request('delete_index',[]);
-        $resp = $this->request('create_index',[]);
-        $this->setOption('facetsearch_last_upload', '');
-        
-        $resp = $this->mapping_index();
-        if(!$resp['success']){
-            $resp['message'] = "Не удалось создать индекс!";
-            return $resp;
-        } 
-        $this->lock('facetsearch_stop_uploading', false);
-        return $this->success("Индекс создан");
-    }
     
-    public function delete_index(){
-        $this->lock('facetsearch_stop_uploading', true);
-        $uploading = $this->check_lock('facetsearch_uploading');
-        $i = 0;
-        while($i < 40 and $uploading){
-            sleep(1);
-            $uploading = $this->check_lock('facetsearch_uploading');
-            $i++;
-        }
-        if($uploading) return $this->error("Не удалось останавить загрузку индекса!");
-        $resp = $this->request('delete_index',[]);
-        //$this->setOption('facetsearch_last_upload', '');
-        
-        //$resp = $this->mapping_index();
-        if(!$resp['success']){
-            $resp['message'] = "Не удалось удалить индекс!";
-            return $resp;
-        } 
-        //$this->lock('facetsearch_stop_uploading', false);
-        return $this->success("Удалено");
-    }
-    public function mapping_index(){
-        $this->pdo->setConfig([
-            'class'=>'fsOption',
-            'where'=>['active'=>1],
-            'return'=>'data',
-            'limit'=>0,
-            ]);
-        $fsOptions = $this->pdo->run();
-        if(!is_array($fsOptions) or count($fsOptions)==0){
-            $this->modx->log(modX::LOG_LEVEL_ERROR, '[FacetSearch] Empty fsOptions');
-            $this->setOption('facetsearch_uploading', false);
-            return $this->error('[FacetSearch] Empty fsOptions');
-        }
-        $properties = [];
-        $properties['all_properties'] = [
-            'type' => 'text'
-        ];
-        $properties['parent_ids'] = [
-            'type' => 'keyword'
-        ];
-        foreach($fsOptions as $fsOption){
-            $type = 'keyword';
-            switch($fsOption['option_type_id']){
-                case 2:
-                    $type = 'float';
-                break;
-                // case 3: case 4:
-                //     $type = 'keyword';
-                // break;
-            }
-            $properties[$fsOption['alias']] = [
-                'type' => $type,
-                'copy_to'=>'all_properties'
-            ];
-        }
-        $resp = $this->request('mapping_index',[            
-            'properties' =>$properties]);
-        $resp['data']['json'] = json_encode( [            
-            'properties' =>$properties],JSON_PRETTY_PRINT);
-        return $resp;
-    }
-    public function request($action,$data = array()){
-        return $this->curl($action,$data);
-    }
+    
     public function setOption($option,$value){
         if($option = $this->modx->getObject('modSystemSetting', $option)){
             $option->set('value', $value);
@@ -278,29 +167,7 @@ class FacetSearch
             $this->modx->cacheManager->refresh(array('system_settings' => array()));
         }
     }
-    public function curl($action,$data = array()){
-        $ch = curl_init($this->config['server_url']);
-        $send = [
-            'action'=>$action,
-            'index'=>$this->config['index'],
-            'api_key'=>$this->config['api_key'],
-            'data'=>json_encode($data),
-        ];
-        //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $send); 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        $res = curl_exec($ch);
-        curl_close($ch);
-        
-        $res0 = json_decode($res, 1);
-        if(!isset($res0['success'])){
-            return $this->error('error curl',['res'=>$res]);
-        }
-        return $res0;
-    }
+    
     public function build_index_status($data){
         sleep(1);
         return $this->success('',[

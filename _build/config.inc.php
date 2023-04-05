@@ -11,7 +11,7 @@ if (!defined('MODX_CORE_PATH')) {
 return [
     'name' => 'FacetSearch',
     'name_lower' => 'facetsearch',
-    'version' => '1.1.14',
+    'version' => '1.1.15',
     'release' => 'beta',
     // Install package to site right after build
     'install' => true,

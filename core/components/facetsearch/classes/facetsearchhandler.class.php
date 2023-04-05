@@ -189,7 +189,7 @@ class FacetSearchHandler
                 }
                 //return $this->fs->success('123',['puts'=>$puts,'fsOptions0'=>$fsOptions0]);
                 if(!empty($puts)){
-                    $resp = $this->fs->request('puts',$puts);
+                    $resp = $this->request('puts',$puts);
                     //$this->modx->log(modX::LOG_LEVEL_ERROR, '[FacetSearch] upload'.print_r($resp,1).print_r($puts,1));
                     //return $this->fs->success('break',['resp'=>$resp]);
                     if(!$resp['success']){
@@ -209,7 +209,7 @@ class FacetSearchHandler
         if($success){
             $this->fs->setOption('facetsearch_last_upload', date('Y-m-d H:i:s'));
         }
-        if(empty($last_upload)) $resp = $this->fs->request('index_builded',[]);
+        if(empty($last_upload)) $resp = $this->request('index_builded',[]);
         //fsPubDelRes
         $success = $this->res_delete();
         $success = $this->res_undelete($fsOptions0,$context);
@@ -234,7 +234,7 @@ class FacetSearchHandler
                 }
                 $ids[] = $fsPubDelRes['resource_id'];
             }
-            $resp = $this->fs->request('delete_ids',$ids);
+            $resp = $this->request('delete_ids',$ids);
         }
         return true;
     }
@@ -279,7 +279,7 @@ class FacetSearchHandler
                     }
                     //return $this->fs->success('123',['puts'=>$puts,'fsOptions0'=>$fsOptions0]);
                     if(!empty($puts)){
-                        $resp = $this->fs->request('puts',$puts);
+                        $resp = $this->request('puts',$puts);
                         //$this->modx->log(modX::LOG_LEVEL_ERROR, '[FacetSearch] upload'.print_r($resp,1).print_r($puts,1));
                         //return $this->fs->success('break',['resp'=>$resp]);
                         if(!$resp['success']){
@@ -637,7 +637,7 @@ class FacetSearchHandler
     public function get_filters_aggs($request,$filters){
         $this->fs->addTime('start get_filters_aggs');
         $query = $this->get_query_aggs($request,$filters);
-        $resp = $this->fs->request('search',$query);
+        $resp = $this->request('search',$query);
         $this->fs->addTime('end get_filters_aggs');
         //$this->fs->addTime('end get_filters_aggs'.print_r($resp,1));
         //$this->fs->addTime('end get_filters_aggs query'.json_encode($query, JSON_PRETTY_PRINT));
@@ -914,7 +914,7 @@ class FacetSearchHandler
 
         $this->fs->addTime('start search');
         $query = $this->get_query($data,$filters);
-        $resp = $this->fs->request('search',$query);
+        $resp = $this->request('search',$query);
         $this->fs->addTime('end search');
         //$this->fs->addTime('get_search'.print_r($resp,1).json_encode($query, JSON_PRETTY_PRINT));
         if(!$resp['success'] or empty($resp['data']['outs']['hits']['total']['value'])){
@@ -1031,25 +1031,143 @@ class FacetSearchHandler
         
         return $query;
     }
-    /*
-    GET mftest.loc/_search
-    {
-    "query": {
-        "bool": {
-        "filter": [ 
-            { "terms":  { "parent_ids": [5] }},
-            { 
-            "range": {
-                "size": {
-                "gte": 0,
-                "lte": 60
-                }
-            }
-            }
-        ]
+    
+    public function rebuild_index(){
+        $this->fs->lock('facetsearch_stop_uploading', true);
+        $uploading = $this->fs->check_lock('facetsearch_uploading');
+        $i = 0;
+        while($i < 40 and $uploading){
+            sleep(1);
+            $uploading = $this->fs->check_lock('facetsearch_uploading');
+            $i++;
         }
+        if($uploading) return $this->fs->error("Не удалось останавить загрузку индекса!");
+        //$resp = $this->request('delete_index',[]);
+        $this->fs->setOption('facetsearch_last_upload', '');
+        $resp = $this->request('rebuild_index',[]);
+        if(!$resp['success']){
+            $resp['message'] = "Не удалось обновить индекс!";
+            return $resp;
+        } 
+        $respm = $this->mapping_index();
+        if(!$respm['success']){
+            $respm['message'] = "Не удалось обновить индекс!";
+            return $respm;
+        } 
+        $this->fs->lock('facetsearch_stop_uploading', false);
+        return $this->fs->success("Ребилд начат",['rebuild_index'=>$resp,'mapping_index'=>$respm]);
     }
+    public function create_index(){
+        $this->fs->lock('facetsearch_stop_uploading', true);
+        $uploading = $this->fs->check_lock('facetsearch_uploading');
+        $i = 0;
+        while($i < 40 and $uploading){
+            sleep(1);
+            $uploading = $this->fs->check_lock('facetsearch_uploading');
+            $i++;
+        }
+        if($uploading) return $this->fs->error("Не удалось останавить загрузку индекса!");
+        //$resp = $this->request('delete_index',[]);
+        $resp = $this->request('create_index',[]);
+        $this->fs->setOption('facetsearch_last_upload', '');
+        
+        $resp = $this->mapping_index();
+        if(!$resp['success']){
+            $resp['message'] = "Не удалось создать индекс!";
+            return $resp;
+        } 
+        $this->fs->lock('facetsearch_stop_uploading', false);
+        return $this->fs->success("Индекс создан");
     }
-    */
+    
+    public function delete_index(){
+        $this->fs->lock('facetsearch_stop_uploading', true);
+        $uploading = $this->fs->check_lock('facetsearch_uploading');
+        $i = 0;
+        while($i < 40 and $uploading){
+            sleep(1);
+            $uploading = $this->fs->check_lock('facetsearch_uploading');
+            $i++;
+        }
+        if($uploading) return $this->fs->error("Не удалось останавить загрузку индекса!");
+        $resp = $this->request('delete_index',[]);
+        //$this->fs->setOption('facetsearch_last_upload', '');
+        
+        //$resp = $this->mapping_index();
+        if(!$resp['success']){
+            $resp['message'] = "Не удалось удалить индекс!";
+            return $resp;
+        } 
+        //$this->fs->lock('facetsearch_stop_uploading', false);
+        return $this->fs->success("Удалено");
+    }
+    public function mapping_index(){
+        $this->pdo->setConfig([
+            'class'=>'fsOption',
+            'where'=>['active'=>1],
+            'return'=>'data',
+            'limit'=>0,
+            ]);
+        $fsOptions = $this->pdo->run();
+        if(!is_array($fsOptions) or count($fsOptions)==0){
+            $this->modx->log(modX::LOG_LEVEL_ERROR, '[FacetSearch] Empty fsOptions');
+            $this->fs->setOption('facetsearch_uploading', false);
+            return $this->fs->error('[FacetSearch] Empty fsOptions');
+        }
+        $properties = [];
+        $properties['all_properties'] = [
+            'type' => 'text'
+        ];
+        $properties['parent_ids'] = [
+            'type' => 'keyword'
+        ];
+        foreach($fsOptions as $fsOption){
+            $type = 'keyword';
+            switch($fsOption['option_type_id']){
+                case 2:
+                    $type = 'float';
+                break;
+                // case 3: case 4:
+                //     $type = 'keyword';
+                // break;
+            }
+            $properties[$fsOption['alias']] = [
+                'type' => $type,
+                'copy_to'=>'all_properties'
+            ];
+        }
+        $resp = $this->request('mapping_index',[            
+            'properties' =>$properties]);
+        $resp['data']['json'] = json_encode( [            
+            'properties' =>$properties],JSON_PRETTY_PRINT);
+        return $resp;
+    }
+    public function request($action,$data = array()){
+        return $this->curl($action,$data);
+    }
+
+    public function curl($action,$data = array()){
+        $ch = curl_init($this->config['server_url']);
+        $send = [
+            'action'=>$action,
+            'index'=>$this->config['index'],
+            'api_key'=>$this->config['api_key'],
+            'data'=>json_encode($data),
+        ];
+        //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $send); 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        
+        $res0 = json_decode($res, 1);
+        if(!isset($res0['success'])){
+            return $this->fs->error('error curl',['res'=>$res]);
+        }
+        return $res0;
+    }
     
 }
