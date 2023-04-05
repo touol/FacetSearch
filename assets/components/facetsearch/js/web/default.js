@@ -145,10 +145,6 @@
             }
             
 
-            $(document).on('submit', this.options.filters, function () {
-                return mSearch2.submit();
-            });
-
             this.btn_reset = $(this.options.btn_reset);
             $(document).on('click', this.options.btn_reset, function (e) {
                 e.preventDefault();
@@ -393,6 +389,7 @@
             } else {
                 this.loading = true;
             }
+            const t0 = performance.now();
             if (Object.keys(params).length) {
                 this.btn_reset.removeClass('hidden');
             } else {
@@ -423,10 +420,13 @@
             var callbacks = FacetSearch.Filter.callbacks;
             callbacks.load.response.success = function (response) {
                 FacetSearch.Filter.loading = false;
+                    const t01 = performance.now();
                 FacetSearch.Filter.afterLoad();
+
                 if(response.data.total !== ''){
                     $(FacetSearch.Filter.options['wrapper']).find('.facetsearch-total').html(response.data.total);
                 }
+
                 if(response.data.results){
                     
                     if (append) {
@@ -437,9 +437,11 @@
                     }
                     
                 }
+
                 if(response.data.pagination){
                     $(FacetSearch.Filter.options['wrapper']).find('.facetsearch_pagination').html(response.data.pagination);
                 }
+
                 if(response.data.aggs){
                     FacetSearch.Filter.setAggs($(FacetSearch.Filter.options['wrapper']),response.data.aggs);
                 }
@@ -449,7 +451,7 @@
                 }
                 
                 if (FacetSearchConfig['mode'] == 'button') {
-                    if (response['data']['pages'] == response['data']['page']) {
+                    if (response['data']['pages'] == response['data']['page'] || response['data']['pages'] ==  0) {
                         $(FacetSearch.Filter.options['more']).hide();
                     }
                     else {
@@ -464,8 +466,12 @@
                     callback.call(this, response, params);
                 }
                 $(document).trigger('mse2_load', response);
+                    const t11 = performance.now();
+                console.log(t11 - t01, 'after');
             };
             this.beforeLoad();
+                const t1 = performance.now();
+                console.log(t1 - t0, 'before');
             FacetSearch.send(FacetSearch.sendData.formData, FacetSearch.Filter.callbacks.load);
             
         },
@@ -754,6 +760,7 @@
                             }
                             else {
                                 item.val('');
+                                FacetSearch.Filter.handleSelected(item);
                             }
                         });
                         break;
@@ -835,7 +842,7 @@
                                 }
                                 input.text(text);
 
-                                FacetSearch.Filter.handleSelected(input.parent());
+                                //FacetSearch.Filter.handleSelected(input.parent());
                             break;
                         }
                     }

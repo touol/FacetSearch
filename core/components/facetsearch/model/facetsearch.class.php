@@ -138,13 +138,23 @@ class FacetSearch
         return call_user_func_array([$this->fsHandler, 'upload_resources'],[$data]);
     }
     public function check_lock($lock_set){
-        return file_exists($this->config['corePath'].$lock_set.'.lock');
+        if(file_exists($this->config['corePath'].$lock_set.'.lock')){
+            $time_lock = (int)file_get_content($this->config['corePath'].$lock_set.'.lock');
+            if(time() - $time_lock > 3600){
+                unlink($this->config['corePath'].$lock_set.'.lock');
+                return false;
+            }else{
+                return true;
+            }
+        }else{
+            return false;
+        }
     }
     public function lock($lock_set,$lock){
         if($lock){
-            file_put_contents($this->config['corePath'].$lock_set.'.lock','1');
+            file_put_contents($this->config['corePath'].$lock_set.'.lock',time());
         }else{
-            unlink($this->config['corePath'].$lock_set.'.lock');
+            if(file_exists($this->config['corePath'].$lock_set.'.lock')) unlink($this->config['corePath'].$lock_set.'.lock');
         }
     }
     public function rebuild_index(){
@@ -184,17 +194,13 @@ class FacetSearch
         if($uploading) return $this->error("Не удалось останавить загрузку индекса!");
         //$resp = $this->request('delete_index',[]);
         $resp = $this->request('create_index',[]);
+        $this->setOption('facetsearch_last_upload', '');
         
-        if(!$resp['success']){
-            $resp['message'] .= " Не удалось создать индекс!";
-            return $resp;
-        } 
         $resp = $this->mapping_index();
         if(!$resp['success']){
-            $resp['message'] .= " Не удалось обновить карту индекса!";
+            $resp['message'] = "Не удалось создать индекс!";
             return $resp;
-        }
-        $this->setOption('facetsearch_last_upload', ''); 
+        } 
         $this->lock('facetsearch_stop_uploading', false);
         return $this->success("Индекс создан");
     }
@@ -236,6 +242,9 @@ class FacetSearch
         $properties = [];
         $properties['all_properties'] = [
             'type' => 'text'
+        ];
+        $properties['parent_ids'] = [
+            'type' => 'keyword'
         ];
         foreach($fsOptions as $fsOption){
             $type = 'keyword';

@@ -1031,5 +1031,25 @@ class FacetSearchHandler
         
         return $query;
     }
+    /*
+    GET mftest.loc/_search
+    {
+    "query": {
+        "bool": {
+        "filter": [ 
+            { "terms":  { "parent_ids": [5] }},
+            { 
+            "range": {
+                "size": {
+                "gte": 0,
+                "lte": 60
+                }
+            }
+            }
+        ]
+        }
+    }
+    }
+    */
     
 }
