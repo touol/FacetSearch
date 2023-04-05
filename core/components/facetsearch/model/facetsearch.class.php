@@ -139,7 +139,7 @@ class FacetSearch
     }
     public function check_lock($lock_set){
         if(file_exists($this->config['corePath'].$lock_set.'.lock')){
-            $time_lock = (int)file_get_content($this->config['corePath'].$lock_set.'.lock');
+            $time_lock = (int)file_get_contents($this->config['corePath'].$lock_set.'.lock');
             if(time() - $time_lock > 3600){
                 unlink($this->config['corePath'].$lock_set.'.lock');
                 return false;
@@ -184,6 +184,7 @@ class FacetSearch
         
         switch($action){
             case 'get_options': case 'filter':case 'filter_ajax':
+                case 'rebuild_index': case 'create_index':case 'delete_index':
                 if (!method_exists($this->fsHandler, $action)) {
                     return $this->success("Method $action not exists!");
                 }
@@ -191,15 +192,6 @@ class FacetSearch
             break;
             case 'puts':
                 return $this->upload_resources();
-            break;
-            case 'rebuild_index':
-                return $this->rebuild_index();
-            break;
-            case 'create_index':
-                return $this->create_index();
-            break;
-            case 'delete_index':
-                return $this->delete_index();
             break;
             case 'build_index_status':
                 return $this->build_index_status($data);
