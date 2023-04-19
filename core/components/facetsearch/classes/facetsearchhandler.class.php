@@ -1046,12 +1046,12 @@ class FacetSearchHandler
         $this->fs->setOption('facetsearch_last_upload', '');
         $resp = $this->request('rebuild_index',[]);
         if(!$resp['success']){
-            $resp['message'] = "Не удалось обновить индекс!";
+            $resp['message'] .= " Не удалось обновить индекс!";
             return $resp;
         } 
         $respm = $this->mapping_index();
         if(!$respm['success']){
-            $respm['message'] = "Не удалось обновить индекс!";
+            $respm['message'] .= " Не удалось обновить индекс!";
             return $respm;
         } 
         $this->fs->lock('facetsearch_stop_uploading', false);
@@ -1073,7 +1073,7 @@ class FacetSearchHandler
         
         $resp = $this->mapping_index();
         if(!$resp['success']){
-            $resp['message'] = "Не удалось создать индекс!";
+            $resp['message'] .= " Не удалось создать индекс!";
             return $resp;
         } 
         $this->fs->lock('facetsearch_stop_uploading', false);
@@ -1095,7 +1095,7 @@ class FacetSearchHandler
         
         //$resp = $this->mapping_index();
         if(!$resp['success']){
-            $resp['message'] = "Не удалось удалить индекс!";
+            $resp['message'] .= " Не удалось удалить индекс!";
             return $resp;
         } 
         //$this->fs->lock('facetsearch_stop_uploading', false);
@@ -1147,6 +1147,7 @@ class FacetSearchHandler
     }
 
     public function curl($action,$data = array()){
+        //$this->modx->log(1,"facetsearch curl ".print_r($this->config,1));
         $ch = curl_init($this->config['server_url']);
         $send = [
             'action'=>$action,

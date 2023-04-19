@@ -15,7 +15,7 @@ return [
     'release' => 'beta',
     // Install package to site right after build
     'install' => true,
-    'encryption_enable' => false,
+    'encryption_enable' => true,
     'encryption' => array(
         'username' => '',
         'api_key' => '',
