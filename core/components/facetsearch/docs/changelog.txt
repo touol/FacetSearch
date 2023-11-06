@@ -3,6 +3,7 @@ Changelog for FacetSearch.
 ==============
 - Все функции OpenSearch в хендлер.
 - Добавлен код facetsearchserver.
+- Отмена шифрования.
 
 1.1.14-beta
 ==============
